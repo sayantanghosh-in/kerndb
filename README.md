@@ -352,9 +352,7 @@ kerndb/
 │           └── settings.py           ← read/write ~/.kerndb/config.json
 │
 ├── tests/
-│   ├── test_postgres_connector.py
-│   ├── test_cli_commands.py
-│   └── test_config.py
+│   └── __init__.py
 │
 ├── pyproject.toml                    ← package metadata for PyPI
 ├── requirements.txt                  ← pinned deps for local dev
