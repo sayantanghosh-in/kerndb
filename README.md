@@ -353,6 +353,8 @@ kerndb/
 │
 ├── tests/
 │   └── __init__.py
+│   └── test_config.py
+│   └── test_postgres_connector.py
 │
 ├── pyproject.toml                    ← package metadata for PyPI
 ├── requirements.txt                  ← pinned deps for local dev
