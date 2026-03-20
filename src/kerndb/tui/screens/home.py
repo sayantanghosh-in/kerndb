@@ -54,6 +54,8 @@ class HomeScreen(Screen):
         Runs once after the screen is rendered.
         Connects to the database and loads the table list.
         """
+        from kerndb.tui.widgets.status_bar import StatusBar
+
         config = get_connection(self.connection_name)
         if config is None:
             self.notify("Connection not found", severity="error")
@@ -68,6 +70,9 @@ class HomeScreen(Screen):
             self.notify(
                 f"Connected to {self.connection_name}",
                 severity="information"
+            )
+            self.query_one("#status-bar", StatusBar).update_connection(
+                self.connection_name, True
             )
             self._load_tables()
         except ConnectionError as e:
@@ -84,10 +89,13 @@ class HomeScreen(Screen):
         Fires when the user clicks a table in the sidebar.
         Loads the first 100 rows of that table automatically.
         """
+        from kerndb.tui.widgets.status_bar import StatusBar
+
         self.active_table = message.table
         self.title = f"kerndb — {self.connection_name} — {message.table}"
         default_query = f"SELECT * FROM {message.table} LIMIT 100;"
         self._run_query(default_query)
+        self.query_one("#status-bar", StatusBar).update_table(message.table)
 
     def on_query_editor_query_submitted(self, message) -> None:
         """
@@ -102,11 +110,13 @@ class HomeScreen(Screen):
         clicks and manual query editor input go through here.
         """
         from kerndb.tui.widgets.results_table import ResultsTable
+        from kerndb.tui.widgets.status_bar import StatusBar
 
         try:
             results = self.connector.execute(query)
             self.query_results = results
             self.query_one("#results-table", ResultsTable).update_results(results)
+            self.query_one("#status-bar", StatusBar).update_row_count(len(results))
         except RuntimeError as e:
             self.notify(str(e), severity="error")
 
