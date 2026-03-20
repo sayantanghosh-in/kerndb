@@ -353,6 +353,7 @@ kerndb/
 │
 ├── tests/
 │   └── __init__.py
+│   └── test_cli_commands.py
 │   └── test_config.py
 │   └── test_postgres_connector.py
 │
