@@ -5,9 +5,7 @@ from kerndb.config.settings import get_all_connections
 
 
 class KernApp(App):
-    """
-    The root Textual application class for kerndb.
-    """
+    """The root Textual application class for kerndb."""
 
     BINDINGS = [
         ("q", "quit", "Quit"),
@@ -25,7 +23,20 @@ class KernApp(App):
         connections = get_all_connections()
         if not connections:
             self.push_screen(ConnectionScreen())
+        else:
+            # if connections exist go straight to home with the first one
+            first = list(connections.keys())[0]
+            self.navigate_to_home(first)
 
     def action_show_connection(self) -> None:
         """Opens the connection manager screen."""
         self.push_screen(ConnectionScreen())
+
+    def navigate_to_home(self, connection_name: str) -> None:
+        """
+        Navigates to the home screen with a specific connection.
+        Called after a connection is saved or on startup if
+        connections already exist.
+        """
+        from kerndb.tui.screens.home import HomeScreen
+        self.push_screen(HomeScreen(connection_name))

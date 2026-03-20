@@ -104,3 +104,4 @@ class ConnectionScreen(Screen):
 
         self.notify(f"Connection '{name}' saved!", severity="information")
         self.app.pop_screen()
+        self.app.navigate_to_home(name)
