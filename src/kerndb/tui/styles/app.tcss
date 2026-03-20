@@ -1,0 +1,167 @@
+/* ============================================================
+   kerndb — global stylesheet
+   Widget-level styles live in each widget's DEFAULT_CSS.
+   This file handles the overall layout and global overrides.
+   ============================================================ */
+
+
+/* --- Global screen layout --- */
+
+Screen {
+    background: $background;
+    layers: base overlay;
+}
+
+HomeScreen {
+    layers: base;
+}
+
+
+/* --- Main layout --- */
+
+#main-layout {
+    height: 1fr;
+    width: 100%;
+}
+
+
+/* --- Sidebar --- */
+
+#sidebar {
+    width: 22%;
+    min-width: 20;
+    max-width: 40;
+    height: 100%;
+    background: $surface;
+    border-right: solid $primary;
+    padding: 0 1;
+}
+
+
+/* --- Right panel --- */
+
+#right-panel {
+    width: 1fr;
+    height: 100%;
+}
+
+
+/* --- Query editor --- */
+
+#query-editor {
+    height: 35%;
+    min-height: 8;
+    border-bottom: solid $primary;
+    background: $surface;
+}
+
+
+/* --- Results table --- */
+
+#results-table {
+    height: 1fr;
+    background: $background;
+    padding: 0 1;
+}
+
+
+/* --- Status bar --- */
+
+#status-bar {
+    height: 1;
+    background: $primary;
+    color: $background;
+    padding: 0 1;
+    dock: bottom;
+}
+
+
+/* --- Header and footer --- */
+
+Header {
+    background: $primary;
+    color: $background;
+    text-style: bold;
+}
+
+Footer {
+    background: $surface;
+    color: $text-muted;
+}
+
+
+/* --- DataTable --- */
+
+DataTable {
+    background: $background;
+}
+
+DataTable > .datatable--header {
+    background: $primary;
+    color: $background;
+    text-style: bold;
+}
+
+DataTable > .datatable--cursor {
+    background: $accent;
+    color: $background;
+}
+
+DataTable > .datatable--stripe {
+    background: $surface;
+}
+
+
+/* --- Buttons --- */
+
+Button.-primary {
+    background: $primary;
+    color: $background;
+}
+
+Button:hover {
+    background: $accent;
+}
+
+
+/* --- Inputs --- */
+
+Input:focus {
+    border: solid $accent;
+}
+
+TextArea:focus {
+    border: solid $accent;
+}
+
+
+/* --- ListView (sidebar table list) --- */
+
+ListView {
+    background: $surface;
+    border: none;
+    padding: 0;
+}
+
+ListItem {
+    padding: 0 1;
+    background: $surface;
+}
+
+ListItem:hover {
+    background: $accent;
+    color: $background;
+}
+
+ListItem.--highlight {
+    background: $primary;
+    color: $background;
+}
+
+
+/* --- Notifications / toasts --- */
+
+Toast {
+    background: $surface;
+    border: solid $primary;
+}

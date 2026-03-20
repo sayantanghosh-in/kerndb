@@ -7,6 +7,10 @@ from kerndb.config.settings import get_all_connections
 class KernApp(App):
     """The root Textual application class for kerndb."""
 
+    # points to the global stylesheet
+    # the path is relative to this file's location
+    CSS_PATH = "../tui/styles/app.tcss"
+
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("c", "show_connection", "New Connection"),
@@ -24,7 +28,6 @@ class KernApp(App):
         if not connections:
             self.push_screen(ConnectionScreen())
         else:
-            # if connections exist go straight to home with the first one
             first = list(connections.keys())[0]
             self.navigate_to_home(first)
 
@@ -33,10 +36,6 @@ class KernApp(App):
         self.push_screen(ConnectionScreen())
 
     def navigate_to_home(self, connection_name: str) -> None:
-        """
-        Navigates to the home screen with a specific connection.
-        Called after a connection is saved or on startup if
-        connections already exist.
-        """
+        """Navigates to the home screen with a specific connection."""
         from kerndb.tui.screens.home import HomeScreen
         self.push_screen(HomeScreen(connection_name))
