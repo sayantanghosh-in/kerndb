@@ -1,6 +1,8 @@
 import typer
 from kerndb.tui.app import KernApp
 from kerndb.cli import commands
+from dotenv import load_dotenv
+load_dotenv()
 
 # the root typer app
 app = typer.Typer(

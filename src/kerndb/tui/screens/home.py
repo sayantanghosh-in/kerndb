@@ -15,20 +15,21 @@ class HomeScreen(Screen):
     Composes the sidebar, query editor, and results table together.
     """
 
+    BINDINGS = [
+        ("ctrl+b", "go_back", "Connections"),
+    ]
+
     # reactive variables — like useState in React
     # when these change, Textual re-renders automatically
     active_table: reactive[str] = reactive("")
     query_results: reactive[list] = reactive([])
     connection_name: reactive[str] = reactive("")
 
-    def __init__(self, connection_name: str) -> None:
-        """
-        HomeScreen receives the name of the saved connection to use.
-        It looks up the connection details from config and connects.
-        """
+    def __init__(self, connection_name: str, password: str = "") -> None:
         super().__init__()
         self.connection_name = connection_name
         self.connector = PostgresConnector()
+        self._password = password   # password passed directly from picker
 
     def compose(self) -> ComposeResult:
         """
@@ -62,8 +63,10 @@ class HomeScreen(Screen):
             self.app.pop_screen()
             return
 
-        password = get_password(self.connection_name)
-        config_with_password = {**config, "password": password or ""}
+        # use directly passed password first
+        # fall back to env variable if not provided
+        password = self._password or get_password(self.connection_name) or ""
+        config_with_password = {**config, "password": password}
 
         try:
             self.connector.connect(config_with_password)
@@ -126,3 +129,7 @@ class HomeScreen(Screen):
         Always disconnect cleanly when leaving the home screen.
         """
         self.connector.disconnect()
+
+    def action_go_back(self) -> None:
+        """Go back to the connection picker."""
+        self.app.pop_screen()

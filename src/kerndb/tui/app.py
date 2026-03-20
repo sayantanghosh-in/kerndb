@@ -1,41 +1,39 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, Label
+
+from kerndb.tui.screens.picker import ConnectionPickerScreen
 from kerndb.tui.screens.connection import ConnectionScreen
-from kerndb.config.settings import get_all_connections
+from kerndb.tui.screens.password import PasswordScreen
 
 
 class KernApp(App):
     """The root Textual application class for kerndb."""
 
-    # points to the global stylesheet
-    # the path is relative to this file's location
-    CSS_PATH = "../tui/styles/app.tcss"
-
     BINDINGS = [
-        ("q", "quit", "Quit"),
-        ("c", "show_connection", "New Connection"),
+        ("ctrl+c", "quit", "Quit"),
     ]
 
-    def compose(self) -> ComposeResult:
-        yield Header()
-        yield Label("Welcome to kerndb — press C to add a connection.")
-        yield Footer()
+    SCREENS = {
+        "picker": ConnectionPickerScreen,
+        "connection": ConnectionScreen,
+        "password": PasswordScreen,
+    }
+
+    CSS_PATH = "../tui/styles/app.tcss"
 
     def on_mount(self) -> None:
         self.title = "kerndb"
         self.sub_title = "terminal database client"
-        connections = get_all_connections()
-        if not connections:
-            self.push_screen(ConnectionScreen())
-        else:
-            first = list(connections.keys())[0]
-            self.navigate_to_home(first)
+        self.push_screen("picker")
 
-    def action_show_connection(self) -> None:
-        """Opens the connection manager screen."""
-        self.push_screen(ConnectionScreen())
-
-    def navigate_to_home(self, connection_name: str) -> None:
-        """Navigates to the home screen with a specific connection."""
+    def navigate_to_home(
+        self,
+        connection_name: str,
+        password: str = ""
+    ) -> None:
+        """
+        Navigates to the home screen with a specific connection.
+        Password is passed directly if provided via the prompt.
+        """
         from kerndb.tui.screens.home import HomeScreen
-        self.push_screen(HomeScreen(connection_name))
+        self.push_screen(HomeScreen(connection_name, password))

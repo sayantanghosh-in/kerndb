@@ -97,10 +97,11 @@ def get_defaults() -> dict:
 
 def get_password(name: str) -> str | None:
     """
-    Retrieves the password for a connection.
-    Never stored in config — reads from environment variable instead.
-    Environment variable format: KERNDB_PASSWORD_<NAME> (uppercased)
-    Example: connection named "mydb" -> KERNDB_PASSWORD_MYDB
+    Retrieves the password for a connection from an environment variable.
+    Spaces in connection names are replaced with underscores in the key.
+    Format: KERNDB_PASSWORD_<NAME_UPPERCASED_WITH_UNDERSCORES>
+    Example: "Dummy 1" -> KERNDB_PASSWORD_DUMMY_1
     """
-    env_key = f"KERNDB_PASSWORD_{name.upper()}"
+    sanitised = name.upper().replace(" ", "_")
+    env_key = f"KERNDB_PASSWORD_{sanitised}"
     return os.environ.get(env_key, None)

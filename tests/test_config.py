@@ -67,3 +67,18 @@ def test_get_password_returns_none_when_not_set():
     from kerndb.config.settings import get_password
     result = get_password("connection_that_has_no_password_set")
     assert result is None
+
+def test_get_password_from_env():
+    """Password should be read from environment variable."""
+    from kerndb.config.settings import get_password
+    os.environ["KERNDB_PASSWORD_TESTDB"] = "supersecret"
+    assert get_password("testdb") == "supersecret"
+    del os.environ["KERNDB_PASSWORD_TESTDB"]
+
+
+def test_get_password_with_spaces_in_name():
+    """Connection names with spaces should map to underscores in env key."""
+    from kerndb.config.settings import get_password
+    os.environ["KERNDB_PASSWORD_DUMMY_1"] = "supersecret"
+    assert get_password("Dummy 1") == "supersecret"
+    del os.environ["KERNDB_PASSWORD_DUMMY_1"]
