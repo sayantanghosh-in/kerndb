@@ -17,6 +17,7 @@ class HomeScreen(Screen):
 
     BINDINGS = [
         ("ctrl+b", "go_back", "Connections"),
+        ("ctrl+n", "new_connection", "New Connection"),
     ]
 
     # reactive variables — like useState in React
@@ -32,10 +33,6 @@ class HomeScreen(Screen):
         self._password = password   # password passed directly from picker
 
     def compose(self) -> ComposeResult:
-        """
-        Defines the layout of the home screen.
-        We import widgets here to avoid circular imports at the top of the file.
-        """
         from kerndb.tui.widgets.sidebar import Sidebar
         from kerndb.tui.widgets.query_editor import QueryEditor
         from kerndb.tui.widgets.results_table import ResultsTable
@@ -55,6 +52,7 @@ class HomeScreen(Screen):
         Runs once after the screen is rendered.
         Connects to the database and loads the table list.
         """
+        self.app.sub_title = "Sayantan Ghosh  •  sayantanghosh.in  •  github.com/sayantanghosh-in"
         from kerndb.tui.widgets.status_bar import StatusBar
 
         config = get_connection(self.connection_name)
@@ -131,5 +129,7 @@ class HomeScreen(Screen):
         self.connector.disconnect()
 
     def action_go_back(self) -> None:
-        """Go back to the connection picker."""
         self.app.pop_screen()
+
+    def action_new_connection(self) -> None:
+        self.app.push_screen("connection")

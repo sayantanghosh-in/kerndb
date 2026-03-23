@@ -1,21 +1,15 @@
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Header, Footer, Label, Input, Button
+from textual.widgets import Footer, Label, Input, Button
 from textual.containers import Vertical, Horizontal
 from textual.message import Message
 
 
 class PasswordScreen(Screen):
-    """
-    A modal screen that asks for a password before connecting.
-    Only shown if no environment variable is set for the connection.
-    """
 
-    class PasswordSubmitted(Message):
-        """Posted when the user submits a password."""
-        def __init__(self, password: str) -> None:
-            self.password = password
-            super().__init__()
+    BINDINGS = [
+        ("escape", "cancel", "Cancel"),
+    ]
 
     DEFAULT_CSS = """
     PasswordScreen {
@@ -42,18 +36,14 @@ class PasswordScreen(Screen):
         padding: 0 0 1 0;
     }
 
-    Input {
-        margin-bottom: 1;
-    }
+    Input { margin-bottom: 1; }
 
     Horizontal {
         height: auto;
         margin-top: 1;
     }
 
-    Button {
-        margin-right: 1;
-    }
+    Button { margin-right: 1; }
     """
 
     def __init__(self, connection_name: str) -> None:
@@ -61,39 +51,42 @@ class PasswordScreen(Screen):
         self.connection_name = connection_name
 
     def compose(self) -> ComposeResult:
-        yield Header()
-        with Vertical():
-            yield Label("Password Required", classes="password-title")
-            yield Label(
+
+        yield Vertical(
+            Label("Password Required", classes="password-title"),
+            Label(
                 f"Enter password for '{self.connection_name}'",
                 classes="password-hint"
-            )
-            yield Label(
+            ),
+            Label(
                 "Tip: Set KERNDB_PASSWORD_"
-                f"{self.connection_name.upper().replace(' ', '_')} "
-                "to skip this prompt.",
+                f"{self.connection_name.upper().replace(' ', '_')}"
+                " to skip this prompt.",
                 classes="password-hint"
-            )
-            yield Input(
-                placeholder="password",
-                password=True,
-                id="password-input"
-            )
-            with Horizontal():
-                yield Button("Connect", variant="primary", id="connect")
-                yield Button("Cancel", variant="default", id="cancel")
+            ),
+            Input(placeholder="password", password=True, id="password-input"),
+            Horizontal(
+                Button("Connect", variant="primary", id="connect"),
+                Button("Esc  Cancel", variant="default", id="cancel"),
+            ),
+        )
         yield Footer()
+
+    def on_mount(self) -> None:
+        self.app.sub_title = "Sayantan Ghosh  •  sayantanghosh.in  •  github.com/sayantanghosh-in"
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "connect":
             self._submit()
         elif event.button.id == "cancel":
-            self.app.pop_screen()
+            self.action_cancel()
 
     def on_key(self, event) -> None:
-        """Allow pressing Enter to submit."""
         if event.key == "enter":
             self._submit()
+
+    def action_cancel(self) -> None:
+        self.app.pop_screen()
 
     def _submit(self) -> None:
         password = self.query_one("#password-input", Input).value
