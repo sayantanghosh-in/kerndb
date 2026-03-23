@@ -6,22 +6,11 @@ from textual.message import Message
 
 
 class QueryEditor(Widget):
-    """
-    The SQL query editor widget.
-    Contains a text area for writing SQL and a Run button.
-    When the user runs a query it posts a QuerySubmitted message
-    which HomeScreen listens for and executes.
-    """
 
-    # nested message class — posted when user runs a query
     class QuerySubmitted(Message):
-        """Posted when the user submits a query to run."""
         def __init__(self, query: str) -> None:
             self.query = query
             super().__init__()
-
-    # class variable — the placeholder text shown in the editor
-    PLACEHOLDER = "-- write your SQL here\nSELECT * FROM users LIMIT 10;"
 
     DEFAULT_CSS = """
     QueryEditor {
@@ -29,78 +18,106 @@ class QueryEditor(Widget):
         border-bottom: solid $primary;
     }
 
-    QueryEditor TextArea {
-        height: 1fr;
+    QueryEditor #editor-header {
+        height: 1;
+        padding: 0 1;
+        align: left middle;
     }
 
-    QueryEditor Horizontal {
-        height: auto;
-        padding: 0 1;
+    QueryEditor #editor-title {
+        text-style: bold;
+        color: $accent;
+        width: 1fr;
+    }
+
+    QueryEditor #editor-actions {
+        width: auto;
+        height: 1;
         align: right middle;
     }
 
-    QueryEditor Button {
-        margin-left: 1;
+    QueryEditor #run-query {
+        background: $primary;
+        color: $background;
+        border: none;
+        min-width: 10;
+        height: 1;
+        padding: 0 1;
     }
 
-    QueryEditor Label.editor-title {
-        text-style: bold;
-        padding: 1 1;
+    QueryEditor #run-query:hover {
+        background: $accent;
+    }
+
+    QueryEditor #clear-query {
+        background: transparent;
+        color: $text-muted;
+        border: none;
+        min-width: 8;
+        height: 1;
+        padding: 0 1;
+    }
+
+    QueryEditor #clear-query:hover {
         color: $accent;
+    }
+
+    QueryEditor #hint-label {
+        color: $text-muted;
+        padding: 0 1;
+        height: 1;
+    }
+
+    QueryEditor TextArea {
+        height: 1fr;
+        border: none;
+        padding: 0;
     }
     """
 
     def compose(self) -> ComposeResult:
-        yield Label("Query Editor", classes="editor-title")
+        # header row — title on left, buttons on right
+        with Horizontal(id="editor-header"):
+            yield Label("Query Editor", id="editor-title")
+            with Horizontal(id="editor-actions"):
+                yield Button("▶ Run F5", id="run-query")
+                yield Button("✕ Clear", id="clear-query")
+
+        # hint label — always visible, never gets in the way
+        yield Label(
+            "-- write your SQL below and press F5 to run",
+            id="hint-label"
+        )
+
+        # empty TextArea — no placeholder content to clear
         yield TextArea(
-            self.PLACEHOLDER,
+            "",
             language="sql",
             id="sql-input",
         )
-        with Horizontal():
-            yield Button("Run  F5", variant="primary", id="run-query")
-            yield Button("Clear", variant="default", id="clear-query")
-
-    def on_mount(self) -> None:
-        """Select all placeholder text on mount so user can just start typing."""
-        editor = self.query_one("#sql-input", TextArea)
-        editor.select_all()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handles Run and Clear button clicks."""
         if event.button.id == "run-query":
             self._submit_query()
         elif event.button.id == "clear-query":
-            self._clear_editor()
+            self.query_one("#sql-input", TextArea).clear()
 
     def on_key(self, event) -> None:
-        """
-        Listens for F5 keypress to run the query.
-        Keyboard shortcut so users don't have to reach for the mouse.
-        """
         if event.key == "f5":
             self._submit_query()
 
     def _submit_query(self) -> None:
-        """
-        Reads the current text from the editor and posts
-        a QuerySubmitted message. HomeScreen receives it
-        and runs the actual query against the database.
-        """
         editor = self.query_one("#sql-input", TextArea)
-        query = editor.text.strip()
+        
+        # if user has selected text, run only the selection
+        # otherwise run the entire editor content
+        selected = editor.selected_text.strip()
+        full = editor.text.strip()
+        
+        query = selected if selected else full
 
         if not query:
-            self.notify("Please enter a query", severity="warning")
-            return
-
-        if query == self.PLACEHOLDER.strip():
-            self.notify("Please enter a query", severity="warning")
+            self.notify("Please write a query first", severity="warning")
             return
 
         self.post_message(self.QuerySubmitted(query))
-
-    def _clear_editor(self) -> None:
-        """Clears the text area."""
-        editor = self.query_one("#sql-input", TextArea)
-        editor.clear()

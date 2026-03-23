@@ -64,11 +64,30 @@ class ConnectionPickerScreen(Screen):
         height: auto;
         max-height: 8;
         border: solid $primary;
-        margin: 0 0 1 0;
+        margin: 0 0 0 0;
     }
 
-    ListItem {
+    ListView > ListItem {
         padding: 0 1;
+        border-left: solid transparent;
+    }
+
+    ListView > ListItem:hover {
+        background: $accent;
+        color: $background;
+    }
+
+    ListView > ListItem.--highlight {
+        background: $primary;
+        color: $background;
+        border-left: solid $accent;
+    }
+
+    #hint-label {
+        text-align: center;
+        color: $text-muted;
+        width: 100%;
+        padding: 1 0 0 0;
     }
 
     #no-connections {
@@ -94,6 +113,12 @@ class ConnectionPickerScreen(Screen):
     def __init__(self) -> None:
         super().__init__()
         self._slug_to_name: dict = {}
+
+    def on_mount(self) -> None:
+        self.app.sub_title = (
+            "Sayantan Ghosh  •  sayantanghosh.in"
+            "  •  github.com/sayantanghosh-in"
+        )
 
     def compose(self) -> ComposeResult:
         from kerndb.config.settings import get_all_connections
@@ -129,6 +154,10 @@ class ConnectionPickerScreen(Screen):
                     ],
                     id="connection-list"
                 )
+                yield Label(
+                    "↑ ↓ navigate   enter connect   n new   q quit",
+                    id="hint-label"
+                )
 
             with Horizontal(id="picker-actions"):
                 yield Button(
@@ -143,9 +172,6 @@ class ConnectionPickerScreen(Screen):
                 )
 
         yield Footer()
-
-    def on_mount(self) -> None:
-        self.app.sub_title = "Sayantan Ghosh  •  https://sayantanghosh.in  •  https://github.com/sayantanghosh-in"
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         if event.item.id is None:

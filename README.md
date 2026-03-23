@@ -436,6 +436,10 @@ git add requirements.txt
 - [ ] Export to CSV
 - [ ] PyPI publish
 
+  > **Note:** Template strings inside INSERT and UPDATE queries
+  > (e.g. `INSERT INTO users VALUES ('{{name}}')`) are not supported
+  > in v1.0. This is planned for a future release.
+
 ### v2.0 — More Connectors
 
 - [ ] MySQL connector

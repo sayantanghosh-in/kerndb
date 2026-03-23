@@ -105,21 +105,64 @@ class HomeScreen(Screen):
         self._run_query(message.query)
 
     def _run_query(self, query: str) -> None:
-        """
-        Runs a SQL query and sends results to the results table.
-        Central place for all query execution — both from sidebar
-        clicks and manual query editor input go through here.
-        """
         from kerndb.tui.widgets.results_table import ResultsTable
         from kerndb.tui.widgets.status_bar import StatusBar
 
-        try:
-            results = self.connector.execute(query)
-            self.query_results = results
-            self.query_one("#results-table", ResultsTable).update_results(results)
-            self.query_one("#status-bar", StatusBar).update_row_count(len(results))
-        except RuntimeError as e:
-            self.notify(str(e), severity="error")
+        # split on semicolon to get individual statements
+        # filter out empty strings from trailing semicolons or blank lines
+        statements = [s.strip() for s in query.split(";") if s.strip()]
+
+        if not statements:
+            self.notify("No valid statements found", severity="warning")
+            return
+
+        last_results = []
+        success_count = 0
+        error_count = 0
+        total_affected = 0
+
+        for statement in statements:
+            try:
+                results = self.connector.execute(statement)
+                last_results = results
+                success_count += 1
+
+                # if this statement returned rows it was a SELECT
+                # if it returned empty list it was INSERT/UPDATE/DELETE
+                if not results:
+                    total_affected += 1
+
+            except RuntimeError as e:
+                error_count += 1
+                self.notify(
+                    f"Statement {success_count + error_count} failed: {e}",
+                    severity="error"
+                )
+                # stop on first error — don't run remaining statements
+                break
+
+        # update the results table with whatever the last SELECT returned
+        self.query_results = last_results
+        self.query_one("#results-table", ResultsTable).update_results(last_results)
+        self.query_one("#status-bar", StatusBar).update_row_count(len(last_results))
+
+        # notify the user about what happened
+        if len(statements) == 1:
+            # single statement — no need for a summary
+            if error_count == 0 and not last_results:
+                self.notify("Statement executed successfully", severity="information")
+        else:
+            # multiple statements — show a summary
+            if error_count == 0:
+                self.notify(
+                    f"All {success_count} statements executed successfully",
+                    severity="information"
+                )
+            else:
+                self.notify(
+                    f"{success_count} succeeded, {error_count} failed",
+                    severity="warning"
+                )
 
     def on_unmount(self) -> None:
         """
