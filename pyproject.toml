@@ -5,15 +5,44 @@ build-backend = "hatchling.build"
 [project]
 name = "kerndb"
 version = "0.1.0"
-description = "A beautiful, UI-first terminal database client"
+description = "A minimal, UI-first terminal database client"
 readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.9"
+keywords = ["database", "terminal", "postgresql", "tui", "cli"]
+authors = [
+    { name = "Sayantan Ghosh", email = "sayantan.ghosh03@gmail.com", website = "https://sayantanghosh.in" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+    "Topic :: Terminals",
+]
 dependencies = [
     "textual>=0.50.0",
     "typer>=0.9.0",
     "rich>=13.0.0",
     "psycopg2-binary>=2.9.0",
+    "python-dotenv>=1.0.0",
+    "httpx>=0.24.0",
 ]
+
+[project.urls]
+Homepage = "https://sayantanghosh.in/projects/kerndb"
+Repository = "https://github.com/sayantanghosh-in/kerndb"
+"Bug Tracker" = "https://github.com/sayantanghosh-in/kerndb/issues"
 
 [project.scripts]
 kerndb = "kerndb.main:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kerndb"]

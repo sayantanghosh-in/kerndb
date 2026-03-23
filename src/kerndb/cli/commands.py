@@ -99,3 +99,46 @@ def remove(
 
     delete_connection(name)
     print_success(f"Connection '{name}' removed.")
+
+@app.command()
+def update() -> None:
+    """Update kerndb to the latest version."""
+    import subprocess
+    import importlib.metadata
+
+    installed = importlib.metadata.version("kerndb")
+    print_success(f"Current version: {installed}")
+
+    try:
+        import httpx
+        response = httpx.get(
+            "https://pypi.org/pypi/kerndb/json",
+            timeout=5.0
+        )
+        latest = response.json()["info"]["version"]
+
+        if latest == installed:
+            print_success("You are already on the latest version.")
+            return
+
+        console.print(
+            f"[dim]Updating kerndb {installed} → {latest}...[/dim]"
+        )
+
+        result = subprocess.run(
+            ["pip", "install", "--upgrade", "kerndb"],
+            capture_output=True,
+            text=True
+        )
+
+        if result.returncode == 0:
+            print_success(f"Updated to kerndb {latest} successfully.")
+            print_success("Restart kerndb to use the new version.")
+        else:
+            print_error("Update failed.")
+            print_error(result.stderr)
+            raise typer.Exit(1)
+
+    except Exception as e:
+        print_error(f"Could not check for updates: {e}")
+        raise typer.Exit(1)
