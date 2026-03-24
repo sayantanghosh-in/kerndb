@@ -7,7 +7,7 @@
 ![PyPI](https://img.shields.io/pypi/v/kerndb)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-![kerndb homescreen](/main/docs/home.png)
+![kerndb homescreen](https://raw.githubusercontent.com/sayantanghosh-in/kerndb/main/docs/home.png)
 
 ---
 
