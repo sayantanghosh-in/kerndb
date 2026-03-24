@@ -3,6 +3,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, ListView, ListItem, Label, Button, Header
 from textual.containers import Vertical, Horizontal
+from textual.reactive import reactive
 
 
 def _slugify(name: str) -> str:
@@ -23,8 +24,14 @@ class ConnectionPickerScreen(Screen):
 
     BINDINGS = [
         ("n", "add_new", "New Connection"),
+        ("d", "delete_connection", "Delete"),
         ("q", "quit", "Quit"),
     ]
+
+    # tracks which connection is currently highlighted
+    _highlighted: reactive[str] = reactive("")
+    # tracks if user has pressed D once already (confirmation)
+    _pending_delete: reactive[str] = reactive("")
 
     DEFAULT_CSS = """
     ConnectionPickerScreen {
@@ -62,14 +69,39 @@ class ConnectionPickerScreen(Screen):
 
     #connection-list {
         height: auto;
-        max-height: 8;
+        max-height: 6;
         border: solid $primary;
         margin: 0 0 0 0;
     }
 
     ListView > ListItem {
-        padding: 0 1;
+        height: 1;
+        padding: 0 0;
         border-left: solid transparent;
+    }
+
+    ListView > ListItem Horizontal {
+        height: 1;
+        align: left middle;
+    }
+
+    ListView > ListItem .conn-name {
+        height: 1;
+        width: 1fr;
+        padding: 0 1;
+        color: $accent;
+    }
+
+    ListView > ListItem.--highlight .conn-name {
+        color: $accent;
+        text-style: bold;
+    }
+
+    ListView > ListItem .delete-hint {
+        height: 1;
+        width: auto;
+        padding: 0 1;
+        color: transparent;
     }
 
     ListView > ListItem:hover {
@@ -77,10 +109,8 @@ class ConnectionPickerScreen(Screen):
         color: $background;
     }
 
-    ListView > ListItem.--highlight {
-        background: $primary;
-        color: $background;
-        border-left: solid $accent;
+    ListView > ListItem:hover .delete-hint {
+        color: $error;
     }
 
     #hint-label {
@@ -106,7 +136,29 @@ class ConnectionPickerScreen(Screen):
 
     #picker-actions Button {
         margin: 0 1;
-        min-width: 20;
+        height: 1;
+        border: none;
+        min-width: 16;
+        padding: 0 1;
+    }
+
+    #add-new {
+        background: $primary;
+        color: $background;
+    }
+
+    #add-new:hover {
+        background: $accent;
+        color: $background;
+    }
+
+    #quit-btn {
+        background: transparent;
+        color: $text-muted;
+    }
+
+    #quit-btn:hover {
+        color: $accent;
     }
     """
 
@@ -115,9 +167,15 @@ class ConnectionPickerScreen(Screen):
         self._slug_to_name: dict = {}
 
     def on_mount(self) -> None:
+        try:
+            import importlib.metadata
+            version = importlib.metadata.version("kerndb")
+        except Exception:
+            version = "dev"
+
         self.app.sub_title = (
-            "Sayantan Ghosh  •  sayantanghosh.in"
-            "  •  github.com/sayantanghosh-in"
+            f"v{version}  •  Sayantan Ghosh  •  sayantanghosh.in"
+            "  •  github.com/sayantanghosh-in/kerndb"
         )
 
     def compose(self) -> ComposeResult:
@@ -147,7 +205,10 @@ class ConnectionPickerScreen(Screen):
                 yield ListView(
                     *[
                         ListItem(
-                            Label(f"  {name}"),
+                            Horizontal(
+                                Label(f"  {name}", classes="conn-name"),
+                                Label("[D] delete", classes="delete-hint"),
+                            ),
                             id=f"conn-{_slugify(name)}"
                         )
                         for name in connections.keys()
@@ -155,25 +216,29 @@ class ConnectionPickerScreen(Screen):
                     id="connection-list"
                 )
                 yield Label(
-                    "↑ ↓ navigate   enter connect   n new   q quit",
+                    "↑ ↓ navigate   enter connect   d delete   n new   q quit",
                     id="hint-label"
                 )
 
             with Horizontal(id="picker-actions"):
-                yield Button(
-                    "N  New Connection",
-                    variant="primary",
-                    id="add-new"
-                )
-                yield Button(
-                    "Q  Quit",
-                    variant="default",
-                    id="quit"
-                )
+                yield Button("▶ N  New Connection", id="add-new")
+                yield Button("✕ Q  Quit", id="quit-btn")
 
         yield Footer()
 
+    def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
+        """
+        Fires when the highlighted item changes via keyboard or mouse.
+        Tracks which connection is currently highlighted for delete.
+        """
+        if event.item and event.item.id:
+            slug = event.item.id.replace("conn-", "", 1)
+            self._highlighted = self._slug_to_name.get(slug, "")
+            # reset pending delete when navigation changes
+            self._pending_delete = ""
+
     def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Fires when user presses Enter on a connection."""
         if event.item.id is None:
             return
         slug = event.item.id.replace("conn-", "", 1)
@@ -181,23 +246,25 @@ class ConnectionPickerScreen(Screen):
         if original_name is None:
             self.notify("Connection not found", severity="error")
             return
+        self._connect(original_name)
+
+    def _connect(self, name: str) -> None:
+        """Handles connecting to a saved connection."""
         from kerndb.config.settings import get_password
-        password = get_password(original_name)
+        password = get_password(name)
         if password is None:
             from kerndb.tui.screens.password import PasswordScreen
             self.app.push_screen(
-                PasswordScreen(original_name),
-                callback=lambda pwd: self.app.navigate_to_home(
-                    original_name, pwd
-                )
+                PasswordScreen(name),
+                callback=lambda pwd: self.app.navigate_to_home(name, pwd)
             )
         else:
-            self.app.navigate_to_home(original_name, password)
+            self.app.navigate_to_home(name, password)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "add-new":
             self.action_add_new()
-        elif event.button.id == "quit":
+        elif event.button.id == "quit-btn":
             self.app.exit()
 
     def action_add_new(self) -> None:
@@ -205,3 +272,32 @@ class ConnectionPickerScreen(Screen):
 
     def action_quit(self) -> None:
         self.app.exit()
+
+    def action_delete_connection(self) -> None:
+        """
+        First D press — show confirmation toast.
+        Second D press on same item — delete it.
+        Navigating away resets the confirmation.
+        """
+        if not self._highlighted:
+            return
+
+        if self._pending_delete == self._highlighted:
+            # second D press — confirmed, delete it
+            from kerndb.config.settings import delete_connection
+            delete_connection(self._highlighted)
+            self.notify(
+                f"'{self._highlighted}' deleted",
+                severity="information"
+            )
+            self._pending_delete = ""
+            # refresh the picker with a fresh instance
+            from kerndb.tui.screens.picker import ConnectionPickerScreen
+            self.app.switch_screen(ConnectionPickerScreen())
+        else:
+            # first D press — ask for confirmation
+            self._pending_delete = self._highlighted
+            self.notify(
+                f"Press D again to delete '{self._highlighted}'",
+                severity="warning"
+            )

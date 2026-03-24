@@ -1,5 +1,4 @@
-from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Label
+from textual.app import App
 
 from kerndb.tui.screens.picker import ConnectionPickerScreen
 from kerndb.tui.screens.connection import ConnectionScreen
@@ -7,14 +6,10 @@ from kerndb.tui.screens.password import PasswordScreen
 
 
 class KernApp(App):
-    """The root Textual application class for kerndb."""
 
-    BINDINGS = [
-        ("ctrl+c", "quit", "Quit"),
-    ]
+    BINDINGS = [("ctrl+c", "quit", "Quit")]
 
     SCREENS = {
-        "picker": ConnectionPickerScreen,
         "connection": ConnectionScreen,
         "password": PasswordScreen,
     }
@@ -23,17 +18,8 @@ class KernApp(App):
 
     def on_mount(self) -> None:
         self.title = "kerndb"
-        self.sub_title = "terminal database client"
-        self.push_screen("picker")
+        self.push_screen(ConnectionPickerScreen())
 
-    def navigate_to_home(
-        self,
-        connection_name: str,
-        password: str = ""
-    ) -> None:
-        """
-        Navigates to the home screen with a specific connection.
-        Password is passed directly if provided via the prompt.
-        """
+    def navigate_to_home(self, connection_name: str, password: str = "") -> None:
         from kerndb.tui.screens.home import HomeScreen
         self.push_screen(HomeScreen(connection_name, password))

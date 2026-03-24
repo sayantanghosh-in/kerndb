@@ -4,14 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kerndb"
-version = "0.1.0"
+version = "0.1.1"
 description = "A minimal, UI-first terminal database client"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
 keywords = ["database", "terminal", "postgresql", "tui", "cli"]
 authors = [
-    { name = "Sayantan Ghosh", email = "sayantan.ghosh03@gmail.com", website = "https://sayantanghosh.in" }
+    { name = "Sayantan Ghosh", email = "sayantan.ghosh03@gmail.com" }
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -46,3 +46,30 @@ kerndb = "kerndb.main:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/kerndb"]
+```
+
+The only changes are removing `website` from the authors entry and bumping version to `0.1.1`.
+
+---
+
+## 3. Author showing as None on PyPI stats
+
+Two reasons this happens:
+
+**Reason 1** — The `website` key in your authors entry is invalid. PyPI's spec only accepts `name` and `email`. Having an unknown key causes the entire authors field to be silently dropped. The fix above removes it.
+
+**Reason 2** — pypistats.org reads the metadata from your uploaded wheel. Since `0.1.0` was already published with the broken authors field, it will show `None` for that version permanently. Once you publish `0.1.1` with the fixed `pyproject.toml`, pypistats will show `Sayantan Ghosh` correctly for the new version.
+
+---
+
+## 4. Where to put the screenshot
+
+Create a `docs/` folder in your project root:
+```
+kerndb/
+├── docs/
+│   └── screenshot.png     ← put it here
+├── src/
+├── README.md
+├── pyproject.toml
+└── ...

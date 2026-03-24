@@ -155,4 +155,5 @@ class ConnectionScreen(Screen):
         })
 
         self.notify(f"Connection '{name}' saved!", severity="information")
-        self.app.switch_screen("picker")
+        from kerndb.tui.screens.picker import ConnectionPickerScreen
+        self.app.switch_screen(ConnectionPickerScreen())

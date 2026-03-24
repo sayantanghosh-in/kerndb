@@ -1,280 +1,150 @@
 # kerndb
 
-> A beautiful, UI-first terminal database client. Connect, explore, and query your database without leaving the terminal.
-
----
+> A minimal, UI-first terminal database client. Connect, explore,
+> and query your PostgreSQL database without leaving the terminal.
 
 ![Python](https://img.shields.io/badge/python-3.9+-blue)
 ![PyPI](https://img.shields.io/pypi/v/kerndb)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
----
-
-## Table of Contents
-
-- [What is kerndb?](#what-is-kerndb)
-- [Philosophy](#philosophy)
-- [What it looks like](#what-it-looks-like)
-- [Features](#features)
-- [Supported Databases](#supported-databases)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Using the TUI](#using-the-tui)
-- [CLI Commands (Power Users)](#cli-commands-power-users)
-- [Keyboard Shortcuts](#keyboard-shortcuts)
-- [Configuration](#configuration)
-- [Project Structure](#project-structure)
-- [Development Setup](#development-setup)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [License](#license)
-
----
-
-## What is kerndb?
-
-**kerndb** is a terminal-based database client with a full interactive UI that runs entirely inside your terminal. It is built for developers who want the speed of the terminal without sacrificing the visual clarity of a GUI tool like TablePlus or DBeaver.
-
-Launch it with one command and you get a full app — sidebar with your tables, a query editor, a results panel, and a connection manager — all inside your terminal.
-
-```bash
-kerndb
-```
-
-That's it. The UI opens and you're home.
-
----
-
-## Philosophy
-
-Most database clients fall into one of two camps:
-
-- **GUI tools** — beautiful and visual, but heavy, mouse-driven, and you have to leave your terminal
-- **Raw CLI tools** — fast and terminal-native, but intimidating, no visual structure, steep learning curve
-
-**kerndb lives in neither camp.** It is built on a simple belief:
-
-> _The terminal is not a limitation. It is a canvas._
-
-kerndb is **UI-first**. When you launch it, you get a full interactive application with panels, navigation, and a query editor — all rendered beautifully inside your terminal using the `textual` framework.
-
-The raw CLI commands (`kerndb connect`, `kerndb query`) exist as a **fallback** for terminal power users, automation scripts, and CI pipelines. But they are not the primary experience.
-
-**If you have never used a terminal database client before, kerndb is built for you.**
-
----
-
-## What it looks like
-
-```
-╔═════════════════════════════════════════════════════════════════╗
-║  kerndb  │  mydb (PostgreSQL)  │  connected ●                   ║
-╠═══════════════╦═════════════════════════════════════════════════╣
-║  TABLES       ║  QUERY EDITOR                                   ║
-║  ─────────    ║  ┌──────────────────────────────────────────┐   ║
-║  users        ║  │ SELECT * FROM users                      │   ║
-║  orders       ║  │ WHERE active = true                      │   ║
-║  products     ║  │ LIMIT 10;                                │   ║
-║  sessions     ║  └──────────────────────────────────────────┘   ║
-║  invoices     ║  [ Run Query F5 ]  [ Clear ]  [ Export ]        ║
-║               ╠═════════════════════════════════════════════════╣
-║  SCHEMAS      ║  RESULTS                  10 rows  │  4.2ms     ║
-║  ─────────    ║  ┌──────┬───────────────┬──────────┬──────────┐ ║
-║  public       ║  │ id   │ name          │ email    │ active   │ ║
-║  auth         ║  ├──────┼───────────────┼──────────┼──────────┤ ║
-║               ║  │ 1    │ Arjun Sharma  │ a@...    │ true     │ ║
-║               ║  │ 2    │ Priya Nair    │ p@...    │ true     │ ║
-║               ║  │ 3    │ Rohan Mehta   │ r@...    │ false    │ ║
-╚═══════════════╩═════════════════════════════════════════════════╝
-```
-
----
-
-## Features
-
-### TUI — Primary Experience
-
-- Full interactive UI inside your terminal
-- Sidebar showing all tables and schemas
-- SQL query editor with syntax highlighting
-- Results panel with scrollable, paginated table output
-- Connection manager — save and switch between multiple databases
-- Table inspector — select any table to see its columns, types, and constraints
-- Query history — browse and re-run previous queries
-- Export results to CSV from inside the UI
-
-### CLI — Power User Fallback
-
-- Connect to a database from the command line
-- Run a query and get output directly in the terminal
-- Pipe results into other commands
-- Scriptable and CI-friendly
-
----
-
-## Supported Databases
-
-| Database   | Version | Status          |
-| ---------- | ------- | --------------- |
-| PostgreSQL | 12+     | ✅ v1.0         |
-| MySQL      | 8+      | 🔜 v2.0 planned |
-| SQLite     | 3+      | 🔜 v2.0 planned |
-| MariaDB    | 10+     | 🔜 planned      |
-| Supabase   | —       | 🔜 planned      |
-| MongoDB    | 6+      | 🔜 planned      |
-
-> **v1.0 ships with PostgreSQL only.** The architecture is built from the ground up
-> to make adding new connectors straightforward — each database is a self-contained
-> plugin that implements a shared interface. Adding MySQL in v2.0 will not require
-> touching any existing code.
+![kerndb homescreen](/main/docs/home.png)
 
 ---
 
 ## Installation
 
-### Requirements
+### Recommended — pipx (no venv needed)
 
-- Python 3.9 or higher
-- pip
+```bash
+pipx install kerndb
+```
 
-### Install from PyPI
+### Alternative — pip
 
 ```bash
 pip install kerndb
 ```
 
-### Verify installation
+### Verify
 
 ```bash
 kerndb --version
 ```
 
+> **Why pipx?** pipx installs CLI tools in isolated environments
+> automatically. You get the `kerndb` command globally without
+> managing a virtual environment yourself. Install pipx with
+> `pip install pipx` or `brew install pipx`.
+
 ---
 
 ## Quick Start
-
-### Launch the TUI (recommended)
 
 ```bash
 kerndb
 ```
 
-Opens the full interactive UI. From here you can add a connection,
-browse your tables, and run queries — no further commands needed.
+That's it. The UI opens. Add a connection and start querying.
 
-### Launch and connect directly
+---
 
-```bash
-kerndb --connect postgres://user:password@localhost:5432/mydb
-```
+## What is kerndb?
 
-Opens the TUI already connected to your database.
+**kerndb** is a terminal-based database client with a full
+interactive UI that runs inside your terminal. Built for developers
+who want the speed of the terminal without sacrificing the visual
+clarity of a GUI tool like TablePlus or DBeaver.
+
+> _The terminal is not a limitation. It is a canvas._
 
 ---
 
 ## Using the TUI
 
-### Step 1 — Add a connection
+### Adding a connection
 
-When you first launch kerndb you will see the connection manager.
-Fill in your PostgreSQL details and give the connection a name:
+Launch kerndb and press `N` to add a new connection. Fill in
+your PostgreSQL details and press Save. Passwords are never stored
+on disk — kerndb reads them from environment variables:
 
+```bash
+# set password for a connection named "mydb"
+# Windows
+$env:KERNDB_PASSWORD_MYDB="yourpassword"
+
+# Mac/Linux
+export KERNDB_PASSWORD_MYDB=yourpassword
 ```
-Name:      mydb
-Host:      localhost
-Port:      5432
-User:      postgres
-Password:  ••••••••
-Database:  mydb
+
+Or use a `.env` file in your project directory:
+
+```bash
+KERNDB_PASSWORD_MYDB=yourpassword
 ```
 
-Press `Enter` to connect. kerndb saves this for next time.
+### Running queries
 
-### Step 2 — Browse your tables
+- Click any table in the sidebar to preview its data
+- Write SQL in the query editor and press `F5` to run
+- Select part of your SQL and press `F5` to run just the selection
+- Write multiple statements separated by `;` and press `F5` to run all
 
-The left sidebar lists all tables and schemas. Use arrow keys or
-your mouse to navigate. Press `Enter` on any table to preview its
-data and inspect its columns in the results panel.
+### Keyboard shortcuts
 
-### Step 3 — Write a query
-
-The query editor is in the top-right panel. Click it or press `Q`
-to focus it. Write your SQL and press `F5` to run.
-
-### Step 4 — Read your results
-
-Results appear in the bottom-right panel. Scroll through rows and
-columns with arrow keys. Press `E` to export to CSV.
-
-### Step 5 — Switch connections
-
-Press `C` to open the connection manager and switch databases.
+| Key      | Action                                     |
+| -------- | ------------------------------------------ |
+| `F5`     | Run query (or selected text)               |
+| `N`      | New connection (from picker screen)        |
+| `D`      | Delete connection (press twice to confirm) |
+| `Ctrl+B` | Go back to connection picker               |
+| `Q`      | Quit                                       |
+| `Ctrl+C` | Force quit                                 |
 
 ---
 
-## CLI Commands (Power Users)
+## CLI Commands
 
-These commands bypass the TUI entirely. Useful for scripting,
-automation, and piping output into other tools.
-
-### Open the TUI
+For scripting and automation — bypasses the TUI entirely.
 
 ```bash
-kerndb
-```
+# list saved connections
+kerndb cli connections
 
-### Open TUI connected to a specific database
+# run a query
+kerndb cli query "SELECT * FROM users LIMIT 10" --connection mydb
 
-```bash
-kerndb --connect postgres://user:password@localhost:5432/mydb
-```
+# export to CSV
+kerndb cli query "SELECT * FROM orders" --export orders.csv --connection mydb
 
-### Run a query (no TUI, plain output)
+# save a connection
+kerndb cli save mydb --user postgres --database mydb
 
-```bash
-kerndb query "SELECT * FROM users LIMIT 10" --connection mydb
-```
+# remove a connection
+kerndb cli remove mydb
 
-### List saved connections
-
-```bash
-kerndb connections
-```
-
-### Save a named connection
-
-```bash
-kerndb save mydb postgres://user:password@localhost:5432/mydb
-```
-
-### Export a query to CSV
-
-```bash
-kerndb query "SELECT * FROM orders" --export orders.csv --connection mydb
+# update kerndb
+kerndb cli update
 ```
 
 ---
 
-## Keyboard Shortcuts
+## Supported Databases
 
-| Key      | Action                      |
-| -------- | --------------------------- |
-| `F5`     | Run query                   |
-| `Tab`    | Move focus between panels   |
-| `C`      | Open connection manager     |
-| `T`      | Focus table sidebar         |
-| `Q`      | Focus query editor          |
-| `R`      | Focus results panel         |
-| `E`      | Export results to CSV       |
-| `H`      | Open query history          |
-| `?`      | Show keyboard shortcut help |
-| `Ctrl+C` | Quit                        |
+| Database       | Status     |
+| -------------- | ---------- |
+| PostgreSQL 12+ | ✅ v1.0    |
+| MySQL 8+       | 🔜 v2.0    |
+| SQLite 3+      | 🔜 v2.0    |
+| MariaDB        | 🔜 planned |
+| Supabase       | 🔜 planned |
+| MongoDB        | 🔜 planned |
 
 ---
 
 ## Configuration
 
-kerndb stores configuration at `~/.kerndb/config.json`:
+Connections are stored at `~/.kerndb/config.json`.
+Passwords are never stored — use environment variables or a `.env` file.
 
 ```json
 {
@@ -285,190 +155,55 @@ kerndb stores configuration at `~/.kerndb/config.json`:
       "port": 5432,
       "user": "postgres",
       "database": "mydb"
-    },
-    "staging": {
-      "type": "postgres",
-      "host": "staging.example.com",
-      "port": 5432,
-      "user": "postgres",
-      "database": "mydb"
     }
-  },
-  "defaults": {
-    "page_size": 50,
-    "export_format": "csv",
-    "theme": "dark"
   }
 }
 ```
 
-> Passwords are never stored in the config file. kerndb prompts for
-> a password on connect, or reads from the environment:
+---
 
-```bash
-export KERNDB_PASSWORD=yourpassword
-kerndb --connect postgres://user@localhost:5432/mydb
-```
+## Known Limitations
+
+- Template strings in INSERT/UPDATE queries
+  (e.g. `INSERT INTO users VALUES ('{{name}}')`) are not
+  supported in v1.0. Planned for a future release.
 
 ---
 
-## Project Structure
-
-```
-kerndb/
-├── src/
-│   └── kerndb/
-│       ├── __init__.py
-│       ├── main.py                   ← entry point, launches TUI or routes to CLI
-│       │
-│       ├── tui/                      ← everything related to the terminal UI
-│       │   ├── __init__.py
-│       │   ├── app.py                ← main Textual App class, boots the UI
-│       │   ├── screens/              ← full-screen views
-│       │   │   ├── __init__.py
-│       │   │   ├── home.py           ← main screen (sidebar + editor + results)
-│       │   │   └── connection.py     ← connection manager screen
-│       │   ├── widgets/              ← reusable UI components
-│       │   │   ├── __init__.py
-│       │   │   ├── sidebar.py        ← tables and schemas list
-│       │   │   ├── query_editor.py   ← SQL input panel
-│       │   │   ├── results_table.py  ← query results panel
-│       │   │   └── status_bar.py     ← bottom connection status bar
-│       │   └── styles/
-│       │       └── app.tcss          ← Textual CSS stylesheet
-│       │
-│       ├── connectors/               ← one file per database type
-│       │   ├── __init__.py
-│       │   ├── base.py               ← abstract base class (the shared interface)
-│       │   └── postgres.py           ← PostgreSQL connector (v1)
-│       │
-│       ├── cli/                      ← raw terminal commands (power user fallback)
-│       │   ├── __init__.py
-│       │   ├── commands.py           ← typer CLI command definitions
-│       │   └── formatters.py         ← formats output for plain terminal (no TUI)
-│       │
-│       └── config/                   ← config file management
-│           ├── __init__.py
-│           └── settings.py           ← read/write ~/.kerndb/config.json
-│
-├── tests/
-│   └── __init__.py
-│   └── test_cli_commands.py
-│   └── test_config.py
-│   └── test_postgres_connector.py
-│
-├── pyproject.toml                    ← package metadata for PyPI
-├── requirements.txt                  ← pinned deps for local dev
-├── .env.example                      ← template for environment variables
-├── .gitignore
-├── LICENSE
-└── README.md
-```
-
----
-
-## Development Setup
-
-### 1. Clone the repository
+## Development
 
 ```bash
-git clone https://github.com/yourusername/kerndb.git
+git clone https://github.com/sayantanghosh-in/kerndb.git
 cd kerndb
-```
-
-### 2. Create and activate a virtual environment
-
-```bash
-virtualenv venv
-source venv/bin/activate        # mac/linux
-venv\Scripts\activate           # windows
-```
-
-### 3. Install dependencies
-
-```bash
+python -m venv venv
+source venv/bin/activate   # windows: venv\Scripts\activate
 pip install -r requirements.txt
-```
-
-### 4. Install kerndb in editable mode
-
-```bash
 pip install -e .
-```
-
-The `-e` flag means editable — changes you make to the source are
-immediately reflected when you run `kerndb`. No reinstall needed.
-
-### 5. Run kerndb
-
-```bash
 kerndb
 ```
 
-### 6. Run tests
+Run tests:
 
 ```bash
-pytest tests/
+python -m pytest tests/ -v
 ```
-
-### Adding a new dependency
-
-```bash
-pip install some-package
-pip freeze > requirements.txt
-git add requirements.txt
-```
-
----
-
-## Roadmap
-
-### v1.0 — PostgreSQL + Full TUI
-
-- [x] Project scaffolding
-- [ ] Base connector interface
-- [ ] PostgreSQL connector
-- [ ] TUI home screen (sidebar + query editor + results)
-- [ ] Connection manager screen
-- [ ] Save and load named connections
-- [ ] Table inspector
-- [ ] Query history
-- [ ] Export to CSV
-- [ ] PyPI publish
-
-  > **Note:** Template strings inside INSERT and UPDATE queries
-  > (e.g. `INSERT INTO users VALUES ('{{name}}')`) are not supported
-  > in v1.0. This is planned for a future release.
-
-### v2.0 — More Connectors
-
-- [ ] MySQL connector
-- [ ] SQLite connector
-- [ ] MariaDB connector
-
-### v3.0 — Power Features
-
-- [ ] Supabase connector
-- [ ] MongoDB connector
-- [ ] Natural language to SQL (`kerndb ask "show me recent orders"`)
-- [ ] Homebrew tap
-- [ ] Standalone binaries (no Python required)
 
 ---
 
 ## Contributing
 
-This is a hobby project. Contributions, bug reports, and feature
-requests are all welcome. Open an issue or a pull request.
+Issues and PRs are welcome at
+[github.com/sayantanghosh-in/kerndb](https://github.com/sayantanghosh-in/kerndb).
 
-Please make sure your code:
-
-- Has no linting errors (`flake8 src/`)
-- Is formatted with black (`black src/`)
-- Includes a test for any new functionality
+Please make sure your code passes `flake8 src/` and `black src/`
+before submitting a PR.
 
 ---
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT — see [LICENSE](LICENSE) for details.
+
+---
+
+_Built by [Sayantan Ghosh](https://sayantanghosh.in)_

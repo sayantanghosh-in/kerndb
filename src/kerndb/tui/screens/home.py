@@ -52,8 +52,13 @@ class HomeScreen(Screen):
         Runs once after the screen is rendered.
         Connects to the database and loads the table list.
         """
-        self.app.sub_title = "Sayantan Ghosh  •  sayantanghosh.in  •  github.com/sayantanghosh-in"
         from kerndb.tui.widgets.status_bar import StatusBar
+        from kerndb.tui.widgets.query_editor import QueryEditor
+
+        self.app.sub_title = (
+            "Sayantan Ghosh  •  sayantanghosh.in"
+            "  •  github.com/sayantanghosh-in"
+        )
 
         config = get_connection(self.connection_name)
         if config is None:
@@ -76,6 +81,8 @@ class HomeScreen(Screen):
                 self.connection_name, True
             )
             self._load_tables()
+            # autofocus the query editor after connecting
+            self.query_one("#query-editor", QueryEditor).focus()
         except ConnectionError as e:
             self.notify(str(e), severity="error")
 
@@ -150,7 +157,10 @@ class HomeScreen(Screen):
         if len(statements) == 1:
             # single statement — no need for a summary
             if error_count == 0 and not last_results:
-                self.notify("Statement executed successfully", severity="information")
+                self.notify(
+                    "Statement executed successfully",
+                    severity="information"
+                )
         else:
             # multiple statements — show a summary
             if error_count == 0:
